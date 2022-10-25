@@ -74,7 +74,9 @@ class PostURLTests(TestCase):
             [self.POST_EDIT, self.another_author, REDIRECT],
         ]
         for address, client, return_code in pages_response:
-            with self.subTest(address=address, client=get_user(client).username):
+            with self.subTest(
+                address=address, client=get_user(client).username
+            ):
                 self.assertEqual(client.get(address).status_code, return_code)
 
     def test_urls_redirect_guest_client(self):
