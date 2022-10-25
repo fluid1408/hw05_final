@@ -73,7 +73,9 @@ class PostFormTests(TestCase):
             "image": TEST_PICTURE,
         }
         # Отправляем POST-запрос
-        response = self.authorized_client.post(POST_CREATE, data=form_data, follow=True)
+        response = self.authorized_client.post(
+            POST_CREATE, data=form_data, follow=True
+        )
         # Проверяем, сработал ли редирект
         self.assertRedirects(
             response,
@@ -85,7 +87,9 @@ class PostFormTests(TestCase):
         self.assertEqual(post.group_id, form_data["group"])
         self.assertEqual(post.text, form_data["text"])
         self.assertEqual(post.author, self.user)
-        self.assertEqual(post.image.name, f'{IMAGE_FOLDER}{form_data["image"].name}')
+        self.assertEqual(
+            post.image.name, f'{IMAGE_FOLDER}{form_data["image"].name}'
+        )
 
     def test_post_create_page_show_correct_context(self):
         """Шаблон post_create сформирован с правильным контекстом."""
@@ -122,7 +126,9 @@ class PostFormTests(TestCase):
         self.assertEqual(post.text, form_data["text"])
         self.assertEqual(post.group.id, form_data["group"])
         self.assertEqual(self.post.author, post.author)
-        self.assertEqual(post.image.name, f'{IMAGE_FOLDER}{form_data["image"].name}')
+        self.assertEqual(
+            post.image.name, f'{IMAGE_FOLDER}{form_data["image"].name}'
+        )
 
     def test_guest_can_not_create_post_or_comment(self):
         Post.objects.all().delete()

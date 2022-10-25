@@ -33,7 +33,9 @@ def profile(request, username):
     user = User.objects.get(username=username)
     context = {
         "author": user,
-        "page_obj": paginator_posts(user.posts.select_related("group"), request),
+        "page_obj": paginator_posts(
+            user.posts.select_related("group"), request
+        ),
     }
     return render(request, template, context)
 
@@ -71,7 +73,9 @@ def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.user != post.author:
         return redirect("posts:post_detail", post_id=pk)
-    form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
+    form = PostForm(
+        request.POST or None, files=request.FILES or None, instance=post
+    )
     if form.is_valid():
         post.save()
         return redirect("posts:post_detail", post_id=pk)
@@ -113,5 +117,7 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    get_object_or_404(Follow, author__username=username, user=request.user).delete()
+    get_object_or_404(
+        Follow, author__username=username, user=request.user
+    ).delete()
     return redirect("posts:profile", username=username)
