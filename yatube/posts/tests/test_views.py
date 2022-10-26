@@ -14,6 +14,7 @@ from .constants import (
     PROFILE,
     TEST_PICTURE,
     TEST_SLUG,
+    TEST_SLUG1,
     TEST_USER,
     TEST_USER_2,
     UNFOLLOW_USER,
@@ -36,15 +37,17 @@ class PostPagesTests(TestCase):
             slug=TEST_SLUG,
             description="test description of the group",
         )
+        cls.another_group = Group.objects.create(
+            slug=TEST_SLUG1,
+            title="Вторая тестовая группа",
+        )
         cls.post = Post.objects.create(
             text="Тестовый текст поста",
             author=cls.user,
             group=cls.group,
             image=TEST_PICTURE,
         )
-        cls.POST_DETAIL = reverse(
-            "posts:post_detail", kwargs={"post_id": cls.post.id}
-        )
+        cls.POST_DETAIL = reverse("posts:post_detail", args=[cls.post.id])
 
     def check_post_info(self, post):
         with self.subTest(post=post):

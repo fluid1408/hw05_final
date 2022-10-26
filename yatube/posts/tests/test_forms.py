@@ -15,19 +15,15 @@ from .constants import (
     PROFILE,
     REDIRECT_POST_CREATE,
     TEST_PICTURE,
+    TEMP_MEDIA_ROOT,
     TEST_PICTURE_2,
     TEST_SLUG,
     TEST_SLUG1,
     TEST_USER,
+    OK,
 )
 
-# Создаем временную папку для медиа-файлов;
-# на момент теста медиа папка будет переопределена
-TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
-
-# Для сохранения media-файлов в тестах будет использоваться
-# временная папка TEMP_MEDIA_ROOT, а потом мы ее удалим
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostFormTests(TestCase):
     @classmethod
@@ -76,6 +72,7 @@ class PostFormTests(TestCase):
         response = self.authorized_client.post(
             POST_CREATE, data=form_data, follow=True
         )
+        self.assertEqual(response.status_code, OK)
         # Проверяем, сработал ли редирект
         self.assertRedirects(
             response,
