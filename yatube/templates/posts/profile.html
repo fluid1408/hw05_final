@@ -10,17 +10,16 @@
   {% if user.is_authenticated and  author != user %}
     {% if following %}
       <a class="btn btn-lg btn-light"
-           href="{% url 'posts:profile_unfollow' author.username %}"
-           role="button">Отписаться</a>
+        href="{% url 'posts:profile_unfollow' author.username %}"
+        role="button">Отписаться</a>
     {% else %}
       <a class="btn btn-lg btn-light"
-           href="{% url 'posts:profile_follow' author.username %}"
-           role="button">Подписатся</a>
+        href="{% url 'posts:profile_follow' author.username %}"
+        role="button">Подписатся</a>
     {% endif %}
   {% endif %}
     {% for post in page_obj %}
-      {% include 'posts/include/profile_emplate.html' %}
-        <hr>    
+      {% include 'posts/include/profile_emplate.html' %}    
     {% endfor %}   
   </div>   
 {% endblock %}

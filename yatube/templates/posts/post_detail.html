@@ -40,36 +40,9 @@
       </p>
       <p>
         {% if post.author == user %}
-          <a href="{% url 'posts:post_edit' post.id %}">Редактировать пост</a>
-            <div class="card my-4">
-              <h5 class="card-header">Добавить комментарий:</h5>
-              <div class="card-body">
-                <form method="post" action="{% url 'posts:add_comment' post.id %}">
-                  {% csrf_token %}      
-                  <div class="form-group mb-2">
-                    {{ form.text|addclass:"form-control" }}
-                  </div>
-                  <button type="submit" class="btn btn-primary">Отправить</button>
-                </form>
-              </div>
-            </div>
+            <a href="{% url 'posts:post_edit' post.id %}">Редактировать пост</a>     
+          {%  include 'posts/include/comments.html' %}
         {% endif %}
-
-        {% for comment in post.comments.all %}
-          <div class="media mb-4">
-            <div class="media-body">
-              <h5 class="mt-0">
-                <a href="{% url 'posts:profile' comment.author.username %}">
-                  {{ comment.author.username }}
-                </a>
-              </h5>
-              <p>
-                {{ comment.text }}
-              </p>
-            </div>
-          </div>
-        {% endfor %} 
-        {%  include 'posts/include/comments.html' %}
       </p>
     </article>
   </div>

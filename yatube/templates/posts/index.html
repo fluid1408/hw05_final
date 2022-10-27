@@ -4,10 +4,9 @@
   {% include 'posts/include/switcher.html' with index=True%}
   {% load cache %}
   {% cache 20 index_page page_obj.number %}
-      <h1>Последние обновления</h1>
+    <h1>Последние обновления</h1>
     {% for post in page_obj %}
       {% include 'posts/include/profile_emplate.html' %}
-      <hr>
     {% endfor %}
   {% endcache %}
 {% endblock %}
