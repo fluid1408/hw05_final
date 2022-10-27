@@ -29,15 +29,15 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    template = "posts/profile.html"
-    user = User.objects.get(username=username)
+    author = get_object_or_404(User, username=username)
     context = {
-        "author": user,
-        "page_obj": paginator_posts(
-            user.posts.select_related("group"), request
-        ),
+        "author": author,
+        "page_obj": paginator_posts(author.posts.all(), request),
+        "following": request.user.is_authenticated
+        and request.user != author
+        and Follow.objects.filter(author=author, user=request.user).exists(),
     }
-    return render(request, template, context)
+    return render(request, "posts/profile.html", context)
 
 
 def post_detail(request, post_id):
@@ -53,18 +53,12 @@ def post_detail(request, post_id):
 @login_required
 def post_create(request):
     form = PostForm(request.POST or None, files=request.FILES or None)
-    is_edit = False
-    template = "posts/create_post.html"
-    if form.is_valid():
-        post = form.save(commit=False)
-        post.author = request.user
-        post.save()
-        return redirect("posts:profile", username=post.author)
-    context = {
-        "form": form,
-        "is_edit": is_edit,
-    }
-    return render(request, template, context)
+    if not form.is_valid():
+        return render(request, "posts/create_post.html", {"form": form})
+    post = form.save(commit=False)
+    post.author = request.user
+    post.save()
+    return redirect("posts:profile", username=post.author)
 
 
 @login_required

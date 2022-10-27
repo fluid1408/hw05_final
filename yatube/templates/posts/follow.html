@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Подписки{% endblock %}
 {% block content %}
-  {% include 'include/switcher.html' %}
+  {% include 'posts/switcher.html' with follow=True%}
   <h1>Подписки</h1>
   {% for post in page_obj %}
-    {% include 'include/profile_emplate.html' %}
+    {% include 'posts/profile_emplate.html' %}
+    <hr>
   {% endfor %}
 {% endblock %}

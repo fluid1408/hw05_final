@@ -19,6 +19,12 @@ from .constants import (
     TEST_USER,
     TEST_USER_2,
     UNEXISTING_PAGE,
+    FOLLOW,
+    FOLLOW_USER,
+    UNFOLLOW_USER,
+    REDIRECT_LOGIN_FOLLOW,
+    REDIRECT_LOGIN_FOLLOW_INDEX,
+    REDIRECT_LOGIN_UNFOLLOW,
 )
 
 
@@ -72,6 +78,14 @@ class PostURLTests(TestCase):
             [self.POST_EDIT, self.author, OK],
             [POST_CREATE, self.author, OK],
             [self.POST_EDIT, self.another_author, REDIRECT],
+            [FOLLOW, self.client, REDIRECT],
+            [FOLLOW, self.author, OK],
+            [FOLLOW_USER, self.client, REDIRECT],
+            [FOLLOW_USER, self.another_author, REDIRECT],
+            [FOLLOW_USER, self.author, REDIRECT],
+            [UNFOLLOW_USER, self.client, REDIRECT],
+            [UNFOLLOW_USER, self.another_author, REDIRECT],
+            [UNFOLLOW_USER, self.author, NOT_FOUND],
         ]
         for address, client, return_code in pages_response:
             with self.subTest(
@@ -84,6 +98,12 @@ class PostURLTests(TestCase):
             [POST_CREATE, self.client, REDIRECT_POST_CREATE],
             [self.POST_EDIT, self.client, self.REDIRECT_LOGIN_POST_EDIT],
             [self.POST_EDIT, self.another_author, self.POST_DETAIL],
+            [FOLLOW_USER, self.client, REDIRECT_LOGIN_FOLLOW],
+            [UNFOLLOW_USER, self.client, REDIRECT_LOGIN_UNFOLLOW],
+            [FOLLOW, self.client, REDIRECT_LOGIN_FOLLOW_INDEX],
+            [FOLLOW_USER, self.another_author, PROFILE],
+            [UNFOLLOW_USER, self.another_author, PROFILE],
+            [FOLLOW_USER, self.author, PROFILE],
         ]
         """Редирект неавторизованного пользователя"""
         for url, client, redirect in pages_redirect:

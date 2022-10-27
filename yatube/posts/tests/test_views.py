@@ -106,6 +106,7 @@ class PostPagesTests(TestCase):
         self.assertNotEqual(response_1.content, response_3.content)
 
     def test_follow_page(self):
+        Post.objects.all().delete()
         follow_count = Follow.objects.count()
         self.authorized_client.get(FOLLOW_USER_2)
         self.assertEqual(Follow.objects.count(), follow_count + 1)
@@ -114,6 +115,7 @@ class PostPagesTests(TestCase):
         )
 
     def test_unfollow_page(self):
+        Post.objects.all().delete()
         follow_count = Follow.objects.count()
         self.authorized_client2.get(UNFOLLOW_USER)
         self.assertEqual(Follow.objects.count(), follow_count - 1)
@@ -132,6 +134,7 @@ class PaginatorViewsTest(TestCase):
             slug=TEST_SLUG,
             description="Тестовое описание группы",
         )
+        cls.unauthorized_client = Client()
         test_posts = 2 * POSTS_ON_PAGE - 1
         Post.objects.bulk_create(
             Post(
@@ -142,20 +145,18 @@ class PaginatorViewsTest(TestCase):
             for i in range(test_posts)
         )
 
-    def setUp(self):
-        self.unauthorized_client = Client()
-
     def test_first_page_records(self):
-        cache.clear()
         response = self.client.get(INDEX)
         self.assertEqual(len(response.context["page_obj"]), POSTS_ON_PAGE)
         test = (
             (INDEX, POSTS_ON_PAGE),
             (GROUP_LIST, POSTS_ON_PAGE),
             (PROFILE, POSTS_ON_PAGE),
+            (FOLLOW, POSTS_ON_PAGE),
             (f"{INDEX}?page=2", POSTS_ON_PAGE - 1),
             (f"{GROUP_LIST}?page=2", POSTS_ON_PAGE - 1),
             (f"{PROFILE}?page=2", POSTS_ON_PAGE - 1),
+            [f"{FOLLOW}?page=2", POSTS_ON_PAGE - 1],
         )
         for url, value in test:
             with self.subTest(url=url, value=value):

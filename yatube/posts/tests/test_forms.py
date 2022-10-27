@@ -18,6 +18,7 @@ from .constants import (
     TEST_SLUG,
     TEST_SLUG1,
     TEST_USER,
+    TEST_USER_2,
     OK,
 )
 
@@ -28,6 +29,7 @@ class PostFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=TEST_USER)
+        cls.user_2 = User.objects.create_user(username=TEST_USER_2)
         cls.group = Group.objects.create(
             title="Тестовая группа",
             slug=TEST_SLUG,
@@ -43,6 +45,10 @@ class PostFormTests(TestCase):
             slug=TEST_SLUG1,
             description="Тестовое описание",
         )
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
+        cls.authorized_client_2 = Client()
+        cls.authorized_client_2.force_login(cls.user_2)
         cls.POST_DETAIL = reverse("posts:post_detail", args=[cls.post.id])
         cls.POST_EDIT = reverse("posts:post_edit", args=[cls.post.id])
         cls.POST_COMMENT = reverse("posts:add_comment", args=[cls.post.id])
@@ -53,10 +59,6 @@ class PostFormTests(TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
-
-    def setUp(self):
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
 
     def test_create_post(self):
         """Валидная форма создает запись в Post."""
@@ -79,7 +81,7 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), 1)
         # Проверяем, что создалась запись с заданным слагом
         post = Post.objects.get()
-        self.assertEqual(post.group_id, form_data["group"])
+        self.assertEqual(post.group.id, form_data["group"])
         self.assertEqual(post.text, form_data["text"])
         self.assertEqual(post.author, self.user)
         self.assertEqual(
@@ -100,16 +102,14 @@ class PostFormTests(TestCase):
                 self.assertIsInstance(form_field, expected)
 
     def test_edit_post(self):
-        post = Post.objects.create(
-            text="Тестовый текст", group=self.group, author=self.user
-        )
+        post = self.post
         form_data = {
             "text": "Новый текст",
             "group": self.group2.id,
             "image": TEST_PICTURE_2,
         }
         response = self.authorized_client.post(
-            reverse("posts:post_edit", args=[post.id]),
+            self.POST_EDIT,
             data=form_data,
             follow=True,
         )
@@ -169,3 +169,32 @@ class PostFormTests(TestCase):
         self.assertEqual(comment.text, form_data["text"])
         self.assertEqual(comment.post, self.post)
         self.assertEqual(comment.author, self.user)
+
+    def test_anonim_or_not_author_cannot_edit_post(self):
+        """Аноним и не-автор поста не может
+        отредактировать пост."""
+        requests = (
+            (self.client, "Пост изменен анонимом", self.REDIRECT_POST_EDIT),
+            (
+                self.authorized_client_2,
+                "Пост изменен не-автором",
+                self.POST_DETAIL,
+            ),
+        )
+        for client, text, redirect_url in requests:
+            with self.subTest(client=client):
+                form_data = {
+                    "text": text,
+                    "group": self.group2,
+                    "image": TEST_PICTURE,
+                }
+                response = client.post(
+                    self.POST_EDIT,
+                    data=form_data,
+                )
+                post = Post.objects.get(id=self.post.id)
+                self.assertRedirects(response, redirect_url)
+                self.assertEqual(post.text, self.post.text)
+                self.assertEqual(post.group, self.post.group)
+                self.assertEqual(post.author, self.post.author)
+                self.assertEqual(post.image, self.post.image)

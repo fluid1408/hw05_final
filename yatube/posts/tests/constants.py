@@ -26,7 +26,10 @@ REDIRECT = HTTPStatus.FOUND
 NOT_FOUND = HTTPStatus.NOT_FOUND
 LOGIN = reverse("users:login")
 REDIRECT_POST_CREATE = f"{LOGIN}{NEXT}{POST_CREATE}"
-PROFILE = reverse("posts:profile", kwargs={"username": TEST_USER})
+REDIRECT_LOGIN_FOLLOW = f"{LOGIN}{NEXT}{FOLLOW_USER}"
+REDIRECT_LOGIN_UNFOLLOW = f"{LOGIN}{NEXT}{UNFOLLOW_USER}"
+REDIRECT_LOGIN_FOLLOW_INDEX = f"{LOGIN}{NEXT}{FOLLOW}"
+PROFILE = reverse("posts:profile", args=[TEST_USER])
 IMAGE = (
     b"\x47\x49\x46\x38\x39\x61\x02\x00"
     b"\x01\x00\x80\x00\x00\x00\x00\x00"
