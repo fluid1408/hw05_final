@@ -1,12 +1,12 @@
 {% extends 'base.html' %}
 {% block title %}Последние обновления{% endblock %}
 {% block content %}
-  {% include 'posts/switcher.html' with index=True%}
+  {% include 'posts/include/switcher.html' with index=True%}
   {% load cache %}
   {% cache 20 index_page page_obj.number %}
       <h1>Последние обновления</h1>
     {% for post in page_obj %}
-      {% include 'posts/profile_emplate.html' %}
+      {% include 'posts/include/profile_emplate.html' %}
       <hr>
     {% endfor %}
   {% endcache %}
