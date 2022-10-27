@@ -88,74 +88,39 @@ class PostFormTests(TestCase):
             post.image.name, f'{IMAGE_FOLDER}{form_data["image"].name}'
         )
 
-    def test_post_create_page_show_correct_context(self):
-        """Шаблон post_create сформирован с правильным контекстом."""
-        response = self.authorized_client.get(POST_CREATE)
-        form_fields = {
-            "text": forms.fields.CharField,
-            "group": forms.fields.ChoiceField,
-            "image": forms.fields.ImageField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_field = response.context.get("form").fields.get(value)
-                self.assertIsInstance(form_field, expected)
-
     def test_edit_post(self):
-        post = self.post
+        """Валидная форма редактирует запись в Post."""
+        post_count = Post.objects.count()
         form_data = {
-            "text": "Новый текст",
+            "text": "Второй тестовый пост",
             "group": self.group2.id,
             "image": TEST_PICTURE_2,
         }
         response = self.authorized_client.post(
-            self.POST_EDIT,
-            data=form_data,
-            follow=True,
+            self.POST_EDIT, data=form_data, follow=True
         )
-        post.refresh_from_db()
-        self.assertRedirects(
-            response,
-            reverse("posts:post_detail", kwargs={"post_id": post.id}),
-        ),
+        self.assertRedirects(response, self.POST_DETAIL)
+        self.assertEqual(Post.objects.count(), post_count)
+        post = response.context["post"]
         self.assertEqual(post.text, form_data["text"])
-        self.assertEqual(post.group.id, form_data["group"])
-        self.assertEqual(self.post.author, post.author)
+        self.assertEqual(post.group_id, form_data["group"])
+        self.assertEqual(post.author, self.post.author)
         self.assertEqual(
             post.image.name, f'{IMAGE_FOLDER}{form_data["image"].name}'
         )
 
-    def test_guest_can_not_create_post_or_comment(self):
-        Post.objects.all().delete()
-        Comment.objects.all().delete()
-        cases = (
-            (
-                Post,
-                POST_CREATE,
-                REDIRECT_POST_CREATE,
-                {
-                    "text": "Еще тестовый пост",
-                    "group": self.group2.id,
-                    "image": TEST_PICTURE,
-                },
-            ),
-            (
-                Comment,
-                self.POST_COMMENT,
-                self.REDIRECT_POST_COMMENT,
-                {"text": "Еще тестовый комментарий"},
-            ),
-        )
-        for (
-            obj,
-            url,
-            redirect_url,
-            form_data,
-        ) in cases:
+    def test_creat_post_correct_context(self):
+        urls = (self.POST_EDIT, POST_CREATE)
+        form_fields = {
+            "text": forms.CharField,
+            "group": forms.fields.ChoiceField,
+        }
+        for url in urls:
             with self.subTest(url=url):
-                response = self.client.post(url, data=form_data, follow=True)
-                self.assertRedirects(response, redirect_url)
-                self.assertEqual(len(obj.objects.all()), 0)
+                response = self.authorized_client.get(url)
+                for value, expected in form_fields.items():
+                    form_field = response.context["form"].fields.get(value)
+                    self.assertIsInstance(form_field, expected)
 
     def test_create_comment(self):
         Comment.objects.all().delete()
@@ -170,8 +135,42 @@ class PostFormTests(TestCase):
         self.assertEqual(comment.post, self.post)
         self.assertEqual(comment.author, self.user)
 
-    def test_anonim_or_not_author_cannot_edit_post(self):
-        """Аноним и не-автор поста не может
+    def test_guest_can_not_create_post_or_comment(self):
+        """Неавторизованный пользователь не может создать
+        пост или комментарий."""
+        Post.objects.all().delete()
+        Comment.objects.all().delete()
+        cases = (
+            (
+                Post,
+                POST_CREATE,
+                REDIRECT_POST_CREATE,
+                {
+                    "text": "Еще один тестовый пост",
+                    "group": self.group2.id,
+                    "image": TEST_PICTURE,
+                },
+            ),
+            (
+                Comment,
+                self.POST_COMMENT,
+                self.REDIRECT_POST_COMMENT,
+                {"text": "Еще один тестовый комментарий"},
+            ),
+        )
+        for (
+            obj,
+            url,
+            redirect_url,
+            form_data,
+        ) in cases:
+            with self.subTest(url=url):
+                response = self.client.post(url, data=form_data, follow=True)
+                self.assertRedirects(response, redirect_url)
+                self.assertEqual(len(obj.objects.all()), 0)
+
+    def test_guest_or_non_author_cannot_edit(self):
+        """Неавторизованный пользователь и не-автор поста не может
         отредактировать пост."""
         requests = (
             (self.client, "Пост изменен анонимом", self.REDIRECT_POST_EDIT),

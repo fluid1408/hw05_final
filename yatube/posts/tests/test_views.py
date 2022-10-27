@@ -123,43 +123,36 @@ class PostPagesTests(TestCase):
             Follow.objects.filter(user=self.user_2, author=self.user).exists()
         )
 
+    def test_post_on_group_list(self):
+        response = self.authorized_client.get(GROUP_LIST)
+        group = response.context["group"]
+        self.assertEqual(group.slug, self.group.slug)
+        self.assertEqual(group.title, self.group.title)
+        self.assertEqual(group.description, self.group.description)
+        self.assertEqual(group.id, self.group.id)
 
-class PaginatorViewsTest(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create(username=TEST_USER)
-        cls.group = Group.objects.create(
-            title="Тестовое название группы",
-            slug=TEST_SLUG,
-            description="Тестовое описание группы",
-        )
-        cls.unauthorized_client = Client()
-        test_posts = 2 * POSTS_ON_PAGE - 1
-        Post.objects.bulk_create(
+    def test_pages_contain_num_posts(self):
+        cache.clear()
+        Post.objects.all().delete()
+        self.posts = Post.objects.bulk_create(
             Post(
-                author=PaginatorViewsTest.user,
+                author=self.user,
+                group=self.group,
                 text=f"Тестовый пост {i}",
-                group=PaginatorViewsTest.group,
             )
-            for i in range(test_posts)
+            for i in range(POSTS_ON_PAGE + 1)
         )
-
-    def test_first_page_records(self):
-        response = self.client.get(INDEX)
-        self.assertEqual(len(response.context["page_obj"]), POSTS_ON_PAGE)
-        test = (
-            (INDEX, POSTS_ON_PAGE),
-            (GROUP_LIST, POSTS_ON_PAGE),
-            (PROFILE, POSTS_ON_PAGE),
-            (FOLLOW, POSTS_ON_PAGE),
-            (f"{INDEX}?page=2", POSTS_ON_PAGE - 1),
-            (f"{GROUP_LIST}?page=2", POSTS_ON_PAGE - 1),
-            (f"{PROFILE}?page=2", POSTS_ON_PAGE - 1),
-            [f"{FOLLOW}?page=2", POSTS_ON_PAGE - 1],
-        )
+        test = [
+            [INDEX, POSTS_ON_PAGE],
+            [GROUP_LIST, POSTS_ON_PAGE],
+            [PROFILE, POSTS_ON_PAGE],
+            [FOLLOW, POSTS_ON_PAGE],
+            [f"{INDEX}?page=2", 1],
+            [f"{GROUP_LIST}?page=2", 1],
+            [f"{PROFILE}?page=2", 1],
+            [f"{FOLLOW}?page=2", 1],
+        ]
         for url, value in test:
-            with self.subTest(url=url, value=value):
-                cache.clear()
-                response = self.client.get(url)
+            with self.subTest(page=url):
+                response = self.authorized_client2.get(url)
                 self.assertEqual(len(response.context["page_obj"]), value)
