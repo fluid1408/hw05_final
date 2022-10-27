@@ -41,8 +41,9 @@
       <p>
         {% if post.author == user %}
             <a href="{% url 'posts:post_edit' post.id %}">Редактировать пост</a>     
-          {%  include 'posts/include/comments.html' %}
         {% endif %}
+        {%  include 'posts/include/comments.html' %}
+        {% if not forloop.last %}<hr>{% endif %}
       </p>
     </article>
   </div>

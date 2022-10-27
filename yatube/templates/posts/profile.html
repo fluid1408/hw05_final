@@ -7,7 +7,7 @@
     <h5>Подписчики: {{ author.following.count }}</h5>
     <h5>Подписки: {{ author.follower.count }}</h5>
     <h5>Комментарии: {{ author.comments.count }}</h5>
-  {% if user.is_authenticated and  author != user %}
+    {% if user.is_authenticated and  author != user %}
     {% if following %}
       <a class="btn btn-lg btn-light"
         href="{% url 'posts:profile_unfollow' author.username %}"
@@ -19,7 +19,8 @@
     {% endif %}
   {% endif %}
     {% for post in page_obj %}
-      {% include 'posts/include/profile_emplate.html' %}    
+      {% include 'posts/include/profile_emplate.html' %}
+      {% if not forloop.last %}<hr>{% endif %}    
     {% endfor %}   
   </div>   
 {% endblock %}
