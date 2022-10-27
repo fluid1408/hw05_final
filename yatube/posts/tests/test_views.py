@@ -113,8 +113,9 @@ class PostPagesTests(TestCase):
         )
 
     def test_unfollow_page(self):
-        Follow.objects.all().delete()
+        follow_count = Follow.objects.count()
         self.authorized_client2.get(UNFOLLOW_USER)
+        self.assertEqual(Follow.objects.count(), follow_count - 1)
         self.assertFalse(
             Follow.objects.filter(user=self.user_2, author=self.user).exists()
         )
