@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = "epl#2+&4*pg((rd*p=lsa&6sq-$!!dy719eou_w68@*4hxml%r"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -132,7 +132,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/' # префикс для url
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/') # папка, в которой будет лежать статика
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "posts:index"
 # LOGOUT_REDIRECT_URL = 'posts:index'
