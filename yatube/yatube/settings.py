@@ -132,7 +132,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/' # префикс для url
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/') # папка, в которой будет лежать статика
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "posts:index"
 # LOGOUT_REDIRECT_URL = 'posts:index'
